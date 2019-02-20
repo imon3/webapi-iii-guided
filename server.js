@@ -12,7 +12,7 @@ server.use(helmet());
 server.use(morgan('dev'));
 server.use(teamName);
 server.use(restricted);
-server.use(only);
+server.use('/api/hubs', restricted, only('mike'));
 // server.use(moodyGateKeeper);
 
 server.use('/api/hubs', hubsRouter);
@@ -45,17 +45,20 @@ function restricted(req, res, next) {
   }
 }
 
-function only(req, res, next) {
-  const name = req.headers.name;
+function only(name) {
+  return function (req, res, next) {
+    const username = req.headers.name;
 
-  if (name !== 'mike') {
-    res.status(403).json({
-      message: 'Name does not match'
-    })
-  } else {
-    next();
+    if (username.toLowerCase() !== name.toLowerCase()) {
+      res.status(403).json({
+        message: 'Name does not match'
+      })
+    } else {
+      next();
+    }
   }
 }
+
 
 // REQUEST
 server.get('/', (req, res, next) => {
